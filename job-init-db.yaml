@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-init
+spec:
+  template:
+    spec:
+      containers:
+      - image: postgres:14.5-alpine
+        imagePullPolicy: IfNotPresent
+        name: db-init
+        command:
+        - /script/db.sh
+        env:
+        - name: POSTGRES_REPLICATION_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-replication-user
+              key: POSTGRES_REPLICATION_USERNAME
+        - name: POSTGRES_REPLICATION_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-replication-user
+              key: POSTGRES_REPLICATION_PASSWORD
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-secrets 
+              key: POSTGRES_PASSWORD
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+        - name: script
+          mountPath: /script
+      volumes:
+      - name: script
+        configMap:
+          defaultMode: 500
+          name: db-init-script
+      restartPolicy: Never

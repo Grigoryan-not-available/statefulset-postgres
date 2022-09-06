@@ -1,0 +1,69 @@
+apiVersion: v1
+data:
+  pg_hba.conf: "# TYPE  DATABASE        USER            ADDRESS                 METHOD\n\n#
+    \"local\" is for Unix domain socket connections only\nlocal   all             all
+    \                                    trust\n# IPv4 local connections:\nhost    all
+    \            all             127.0.0.1/32            trust\n# IPv6 local connections:\nhost
+    \   all             all             ::1/128                 trust\n# Allow replication
+    connections from localhost, by a user with the\n# replication privilege.\nlocal
+    \  replication     all                                     trust\nhost    replication
+    \    all             127.0.0.1/32            trust\nhost    replication     all
+    \            ::1/128                 trust\n\nhost    replication     replicator
+    \     all                     md5\nhost \tall \t\tall \t\tall \t\t\tmd5\n"
+  postgresql.conf: |
+    # -----------------------------
+    # PostgreSQL configuration file
+    # -----------------------------
+
+    # a8s-pg
+    hba_file = '/etc/postgresql/pg_hba.conf'
+    # a8s-pg
+
+    #------------------------------------------------------------------------------
+    # CONNECTIONS AND AUTHENTICATION
+    #------------------------------------------------------------------------------
+
+    # - Connection Settings -
+
+    listen_addresses = '*'
+
+    #------------------------------------------------------------------------------
+    # WRITE-AHEAD LOG
+    #------------------------------------------------------------------------------
+
+    # - Settings -
+
+    # a8s-pg
+    wal_level = replica         # minimal, replica, or logical
+    # a8s-pg
+
+    # a8s-pg
+    # Required for pg_rewind capability when standby goes out of sync with master
+    wal_log_hints = on          # also do full page writes of non-critical updates
+    # a8s-pg
+
+    #------------------------------------------------------------------------------
+    # REPLICATION
+    #------------------------------------------------------------------------------
+
+    # - Sending Servers -
+
+    # Set these on the master and on any standby that will send replication data.
+
+    # a8s-pg
+    # Sets the maximum number of concurrent connections from the standby servers.
+    max_wal_senders = 3     # max number of walsender processes
+    # a8s-pg
+
+    # a8s-pg
+    # Segments of WAL logs so that they are not deleted before standby consumes them.
+    wal_keep_size = 8   # in logfile segments; 0 disables
+    # a8s-pg
+
+    # a8s-pg
+    # Standby role. This is ignored when the server is running as master.
+    hot_standby = on            # "off" disallows queries during recovery
+    # a8s-pg
+kind: ConfigMap
+metadata:
+  name: postgresql-configs
